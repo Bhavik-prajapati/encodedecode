@@ -3,20 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Convert between Base64 and PDF seamlessly with our user-friendly tool. Encode and decode PDFs with ease. Preview, download, and copy Base64 strings directly from your browser.">
-  <meta name="keywords" content="Base64 to PDF, PDF to Base64, Base64 encoder, Base64 decoder, PDF converter, online tools">
+  <meta name="description" content="Convert between Base64, PDF, and format JSON seamlessly with our user-friendly tool. Encode and decode PDFs, format JSON, and preview files with ease.">
+  <meta name="keywords" content="Base64 to PDF, PDF to Base64, JSON formatter, Base64 encoder, Base64 decoder, PDF converter, online tools">
   <meta name="author" content="EncodeDecode Tool">
-  <meta property="og:title" content="Base64 & PDF Converter - EncodeDecode Tool">
-  <meta property="og:description" content="Convert Base64 to PDF and vice versa. Preview and download PDFs or copy Base64 strings easily. Try our user-friendly tool today!">
-  <meta property="og:url" content="https://encodedecode-production.up.railway.app/">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="https://encodedecode-production.up.railway.app/preview-image.png">
-  <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:title" content="Base64 & PDF Converter - EncodeDecode Tool">
-  <meta property="twitter:description" content="Easily convert Base64 strings to PDFs and back. Preview and copy Base64 data with our online tool.">
-  <meta property="twitter:image" content="https://encodedecode-production.up.railway.app/preview-image.png">
-  <link rel="canonical" href="https://encodedecode-production.up.railway.app/">
-  <title>Base64 & PDF Converter | EncodeDecode Tool</title>
+  <title>Base64, PDF & JSON Formatter | EncodeDecode Tool</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -91,30 +81,74 @@
       border-radius: 4px;
       text-align: center;
     }
+
+    .tab-buttons {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+    }
+
+    .tab-buttons button {
+      flex: 1;
+      padding: 10px;
+      cursor: pointer;
+      background-color: #f4f4f9;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .tab-buttons button.active {
+      background-color: #007bff;
+      color: #fff;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Base64 &lt;&gt; PDF Converter</h1>
+    <h1>Base64, PDF & JSON Formatter</h1>
 
-    <h3>Base64 to PDF</h3>
-    <textarea id="base64Input" placeholder="Paste Base64 content here..."></textarea>
-    <div class="buttons">
-      <button onclick="convertBase64ToPDF()">Convert to PDF</button>
-      <button onclick="copyBase64ToClipboard('base64Input')">Copy Base64</button>
+    <div class="tab-buttons">
+      <button class="tab-btn active" style="color: black;" onclick="showTab('base64-pdf-tab')">Base64 & PDF</button>
+      <button class="tab-btn" style="color: black;"  onclick="showTab('json-formatter-tab')">JSON Formatter</button>
     </div>
 
-    <h3>PDF to Base64</h3>
-    <input type="file" id="pdfInput" accept="application/pdf">
-    <div class="buttons">
-      <button onclick="convertPDFToBase64()">Convert to Base64</button>
-      <button onclick="copyBase64ToClipboard('base64Output')">Copy Base64</button>
-    </div>
-    <textarea id="base64Output" placeholder="Base64 output will appear here..."></textarea>
+    <div id="base64-pdf-tab" class="tab-content active">
+      <h3>Base64 to PDF</h3>
+      <textarea id="base64Input" placeholder="Paste Base64 content here..."></textarea>
+      <div class="buttons">
+        <button onclick="convertBase64ToPDF()">Convert to PDF</button>
+        <button onclick="copyToClipboard('base64Input')">Copy Base64</button>
+      </div>
 
-    <div class="preview" id="pdfPreview">
-      <h3>PDF Preview</h3>
-      <iframe id="pdfViewer" src=""></iframe>
+      <h3>PDF to Base64</h3>
+      <input type="file" id="pdfInput" accept="application/pdf">
+      <div class="buttons">
+        <button onclick="convertPDFToBase64()">Convert to Base64</button>
+        <button onclick="copyToClipboard('base64Output')">Copy Base64</button>
+      </div>
+      <textarea id="base64Output" placeholder="Base64 output will appear here..."></textarea>
+
+      <div class="preview">
+        <h3>PDF Preview</h3>
+        <iframe id="pdfViewer" src=""></iframe>
+      </div>
+    </div>
+
+    <div id="json-formatter-tab" class="tab-content">
+      <h3>JSON Formatter</h3>
+      <textarea id="jsonInput" placeholder="Paste JSON here..."></textarea>
+      <div class="buttons">
+        <button onclick="formatJSON()">Format JSON</button>
+        <button onclick="copyToClipboard('jsonInput')">Copy JSON</button>
+      </div>
     </div>
 
     <div id="alert" class="alert" style="display: none;">Copied to clipboard!</div>
@@ -123,50 +157,46 @@
   <script>
     function convertBase64ToPDF() {
       const base64 = document.getElementById('base64Input').value;
-      if (!base64) {
-        alert('Please provide Base64 content.');
-        return;
-      }
-
+      if (!base64) return alert('Please provide Base64 content.');
       const pdfContent = atob(base64);
       const byteArray = new Uint8Array(pdfContent.length);
-      for (let i = 0; i < pdfContent.length; i++) {
-        byteArray[i] = pdfContent.charCodeAt(i);
-      }
-
+      for (let i = 0; i < pdfContent.length; i++) byteArray[i] = pdfContent.charCodeAt(i);
       const blob = new Blob([byteArray], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-
-      const pdfViewer = document.getElementById('pdfViewer');
-      pdfViewer.src = url;
+      document.getElementById('pdfViewer').src = URL.createObjectURL(blob);
     }
 
     function convertPDFToBase64() {
       const fileInput = document.getElementById('pdfInput');
-      if (!fileInput.files.length) {
-        alert('Please select a PDF file.');
-        return;
-      }
-
-      const file = fileInput.files[0];
+      if (!fileInput.files.length) return alert('Please select a PDF file.');
       const reader = new FileReader();
-
-      reader.onload = function (event) {
-        const base64 = event.target.result.split(',')[1];
-        document.getElementById('base64Output').value = base64;
-      };
-
-      reader.readAsDataURL(file);
+      reader.onload = e => document.getElementById('base64Output').value = e.target.result.split(',')[1];
+      reader.readAsDataURL(fileInput.files[0]);
     }
 
-    function copyBase64ToClipboard(elementId) {
-      const element = document.getElementById(elementId);
+    function copyToClipboard(id) {
+      const element = document.getElementById(id);
       element.select();
       document.execCommand('copy');
-
       const alertBox = document.getElementById('alert');
       alertBox.style.display = 'block';
-      setTimeout(() => (alertBox.style.display = 'none'), 2000);
+      setTimeout(() => alertBox.style.display = 'none', 2000);
+    }
+
+    function formatJSON() {
+      try {
+        const input = document.getElementById('jsonInput').value;
+        const formatted = JSON.stringify(JSON.parse(input), null, 2);
+        document.getElementById('jsonInput').value = formatted;
+      } catch (error) {
+        alert('Invalid JSON. Please check your input.');
+      }
+    }
+
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
     }
   </script>
 </body>
