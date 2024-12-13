@@ -103,12 +103,74 @@
     }
 
     .tab-content {
+      padding: 10px;
       display: none;
     }
 
     .tab-content.active {
       display: block;
     }
+    /* third */
+    body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h3 {
+            text-align: center;
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        .buttons {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #comparison-result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .added {
+            background-color: #a6f3a6;
+            text-decoration: underline;
+        }
+        .removed {
+            background-color: #f8a5a5;
+            text-decoration: line-through;
+        }
+        .unchanged {
+            background-color: transparent;
+        }
   </style>
 </head>
 <body>
@@ -118,6 +180,7 @@
     <div class="tab-buttons">
       <button class="tab-btn active" style="color: black;" onclick="showTab('base64-pdf-tab')">Base64 & PDF</button>
       <button class="tab-btn" style="color: black;"  onclick="showTab('json-formatter-tab')">JSON Formatter</button>
+      <button class="tab-btn" style="color: black;"  onclick="showTab('text-compare-tab')">Text Compare</button>
     </div>
 
     <div id="base64-pdf-tab" class="tab-content active">
@@ -149,6 +212,18 @@
         <button onclick="formatJSON()">Format JSON</button>
         <button onclick="copyToClipboard('jsonInput')">Copy JSON</button>
       </div>
+    </div>
+
+    <div id="text-compare-tab" class="tab-content">
+        <!-- <div class="container"> -->
+          <h3>Text Comparison Tool</h3>
+          <textarea id="textleft" placeholder="Paste first text here..."></textarea>
+          <textarea id="textright" placeholder="Paste second text here..."></textarea>
+          <div class="buttons">
+              <button onclick="compareText()">Compare Texts</button>
+          </div>
+          <div id="comparison-result"></div>
+      <!-- </div> -->
     </div>
 
     <div id="alert" class="alert" style="display: none;">Copied to clipboard!</div>
@@ -198,6 +273,63 @@
       document.getElementById(tabId).classList.add('active');
       event.target.classList.add('active');
     }
+
+
+    function compareText() {
+            const leftText = document.getElementById('textleft').value;
+            const rightText = document.getElementById('textright').value;
+            const comparisonResult = document.getElementById('comparison-result');
+
+            // Split texts into words
+            const leftWords = leftText.split(/\s+/);
+            const rightWords = rightText.split(/\s+/);
+
+            // Create result containers
+            const resultLeft = [];
+            const resultRight = [];
+
+            // Track used indices to avoid duplicates
+            const usedRightIndices = new Set();
+
+            // Compare words
+            leftWords.forEach((word, index) => {
+                const rightIndex = rightWords.findIndex((rWord, rIndex) => 
+                    !usedRightIndices.has(rIndex) && rWord === word
+                );
+
+                if (rightIndex !== -1) {
+                    // Word found in right text
+                    resultLeft.push(`<span class="unchanged">${word}</span>`);
+                    resultRight.push(`<span class="unchanged">${word}</span>`);
+                    usedRightIndices.add(rightIndex);
+                } else {
+                    // Word removed
+                    resultLeft.push(`<span class="removed">${word}</span>`);
+                }
+            });
+
+            // Add remaining right words
+            rightWords.forEach((word, index) => {
+                if (!usedRightIndices.has(index)) {
+                    // Word added
+                    resultRight.push(`<span class="added">${word}</span>`);
+                }
+            });
+
+            // Display results
+            comparisonResult.innerHTML = `
+                <h4>Comparison Result:</h4>
+                <div>
+                    <strong>First Text:</strong><br>
+                    ${resultLeft.join(' ')}
+                    <br><br>
+                    <strong>Second Text:</strong><br>
+                    ${resultRight.join(' ')}
+                </div>
+            `;
+        }
+
+    
   </script>
 </body>
 </html>
